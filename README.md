@@ -12,3 +12,10 @@ Amazing lectures by Prof. Strogatz on YouTube are [here](https://www.youtube.com
 
 ## Description
 Vector phase spaces under HSV color space coloration with fluid simulation
+
+## More Examples
+![alt text](https://farm5.staticflickr.com/4779/39126084020_ea920f39ab_o_d.png "Example")
+
+![alt text](https://farm1.staticflickr.com/787/39126084320_9b643ffa35_o_d.png "Example")
+
+![alt text](https://farm1.staticflickr.com/822/39126084750_8f69ea1971_o_d.png "Example")
