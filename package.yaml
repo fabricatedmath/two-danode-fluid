@@ -27,7 +27,11 @@ dependencies:
 - vector
 - linear
 - accelerate
+- accelerate-io
 - accelerate-llvm-ptx
+- colour-accelerate
+- linear-accelerate
+- two-danode
 
 library:
   source-dirs: src
@@ -45,8 +49,6 @@ executables:
     - pipes
     - pipes-safe
     - pipes-graphics
-    - linear-accelerate
-    - colour-accelerate
 
 tests:
   two-danode-fluid-test:
