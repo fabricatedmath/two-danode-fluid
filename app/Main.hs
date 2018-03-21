@@ -55,7 +55,11 @@ main =
                  in lift (y/100,x/100)
               ) . A.sum
             ) v
-        in runSafeT $ runEffect $ fluidProducer idf ivf >-> squaredDistanceShutoff >-> openGLConsumer' dim
+        in
+          runSafeT $ runEffect $
+          fluidProducer idf ivf >->
+          squaredDistanceShutoff >->
+          openGLConsumer' dim
 
 fluidProducer
   :: Monad m

@@ -1,3 +1,8 @@
 .stack-work/
 two-danode-fluid.cabal
 *~
+scratch
+*.mp4
+*.jpg
+*.bmp
+*.png
