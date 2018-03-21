@@ -22,6 +22,10 @@ description:         Please see the README on Github at <https://github.com/fabr
 dependencies:
 - base >= 4.7 && < 5
 - hint
+- lens
+- repa
+- vector
+- linear
 - accelerate
 - accelerate-llvm-ptx
 
@@ -38,6 +42,11 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - two-danode-fluid
+    - pipes
+    - pipes-safe
+    - pipes-graphics
+    - linear-accelerate
+    - colour-accelerate
 
 tests:
   two-danode-fluid-test:
