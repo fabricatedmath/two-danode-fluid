@@ -26,11 +26,13 @@ import Fluid
 import Type
 
 defaultFD :: P.Num a => DIM2 -> FieldDescription a
-defaultFD (Z :. ydim :. xdim) = FromCenter (V2 ydim xdim) (V2 0 0) (2) (1)
+defaultFD (Z :. ydim :. xdim) = FromCenter (V2 ydim xdim) (V2 0 0) (20) (1)
 
-defaultFS :: FieldStrings
-defaultFS = Cartesian "sin(13*x)*cos(10*y*x)" "sin(5*x)*cos (10*y*x)"
---defaultFS = Cartesian "x" "y"
+defaultFS :: FieldStrings --043 (/ 100)
+defaultFS =
+  Cartesian
+  "(abs $ cos (0.75*x))**(abs $ cos (3*y)) + sin (3*x)"
+  "sin x - cos y"
 
 main :: IO ()
 main =
@@ -50,10 +52,10 @@ main =
             (A.map
               (\vec ->
                  let (V2 y x) = unlift vec :: V2 (Exp Float)
-                 in lift (y/1000,x/1000)
+                 in lift (y/100,x/100)
               ) . A.sum
             ) v
-        in runSafeT $ runEffect $ fluidProducer idf ivf >-> openGLConsumer' dim
+        in runSafeT $ runEffect $ fluidProducer idf ivf >-> squaredDistanceShutoff >-> openGLConsumer' dim
 
 fluidProducer
   :: Monad m
