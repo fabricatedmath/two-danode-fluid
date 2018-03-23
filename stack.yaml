@@ -38,13 +38,13 @@ resolver: lts-10.10
 packages:
 - .
 - ../two-danode
-- ../pipes-graphics/
+- ../pipes-graphics
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
 - ffmpeg-light-0.12.0.1
 #- git:    https://github.com/fabricatedmath/pipes-graphics
-#  commit: a1b59ad03d9d45b98e9aea2482f47221fabf5376
+#  commit: bd230d54bf6de7e024ddb3249c17977bb20bd6cf
 
 - git:    https://github.com/tmcdonell/accelerate.git
   commit: c2946299193ac55547d51ff32abc3bfd9ad42d59

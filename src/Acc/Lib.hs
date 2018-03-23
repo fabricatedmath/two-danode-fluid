@@ -9,6 +9,10 @@ import Data.Array.Accelerate.Data.Colour.HSV            as HSV
 
 import Data.Array.Accelerate.LLVM.PTX
 
+import Data.Array.Accelerate.Linear
+
+import qualified Linear as L
+
 import Prelude as P
 
 import Type
@@ -53,6 +57,7 @@ makeDensity_rgb dim@(Z :. height :. width) =
     fromFunction dim wrapHsv
 
 --TODO: add better method for positioning "camera"
+--TODO: deal with xc,yc == 0
 makeDensity_hsv :: DIM2 -> Array DIM2 (Float, RGB Float)
 makeDensity_hsv dim@(Z :. height :. width) =
   let
@@ -75,10 +80,28 @@ makeDensity_hsv dim@(Z :. height :. width) =
         ratio = dist/hypoLen
         isObtuse = P.max 0 $ negate $ signum yc
       in
-        (1,HSV angleNorm ratio 1)
+        if L.nearZero yc P.&& L.nearZero xc
+        then (0,HSV 0 0 0) else (1,HSV angleNorm ratio 1)
   in
     run1 (A.map (\v -> lift (A.fst v,toRGB $ A.snd v)))
     $ fromFunction dim wrapHsv
+
+makeDensity_test :: DIM2 -> Array DIM2 (V2 Float)
+makeDensity_test dim@(Z :. height :. width) =
+  let
+    xdim = P.fromIntegral width
+    ydim = P.fromIntegral height
+    ybound = 4
+    xbound = 4
+
+    wrapHsv :: DIM2 -> V2 Float
+    wrapHsv (Z :. yc' :. xc') =
+      let
+        yc = (P.fromIntegral yc' / ydim * 2 - 1) * xbound
+        xc = (P.fromIntegral xc' / xdim * 2 - 1) * ybound
+      in V2 yc xc
+  in
+    fromFunction dim wrapHsv
 
 makePicture :: Acc (Field (Float,RGB Float)) -> Acc (Field (Word8,Word8,Word8))
 makePicture df = A.map (rgbToTuple . f) df
