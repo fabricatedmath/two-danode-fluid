@@ -103,8 +103,8 @@ makeDensity_test dim@(Z :. height :. width) =
   in
     fromFunction dim wrapHsv
 
-makePicture :: Acc (Field (Float,RGB Float)) -> Acc (Field (Word8,Word8,Word8))
-makePicture df = A.map (rgbToTuple . f) df
+makePicture :: Acc (Field (Float,RGB Float)) -> Acc (Field (V3 Word8))
+makePicture df = A.map (rgbToVec . f) df
   where
     maxV = the $ foldAll A.max 0 $ A.map (A.fst) df
     f e =
@@ -113,15 +113,15 @@ makePicture df = A.map (rgbToTuple . f) df
       in
         HSV.toRGB $ lift $ HSV h s (d / maxV)
 
-rgbToTuple :: Exp RGB.Colour -> Exp (Word8,Word8,Word8)
-rgbToTuple ec =
+rgbToVec :: Exp RGB.Colour -> Exp (V3 Word8)
+rgbToVec ec =
   let
     (RGB.RGB r g b) = unlift ec
     r' = word8OfFloat r
     g' = word8OfFloat g
     b' = word8OfFloat b
   in
-    lift (r',g',b')
+    lift $ V3 r' g' b'
 
 word8OfFloat :: Exp Float -> Exp Word8
 word8OfFloat x = A.truncate (x * 255)

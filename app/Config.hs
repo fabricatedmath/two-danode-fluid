@@ -1,8 +1,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Config (loadConfigFromArgs, Descr(..), descrFD, descrFS) where
+module Config (loadConfigFromArgs, Descr(..), optHintDescr) where
 
 import Control.Lens
+
+import Data.Aeson (decode')
+import qualified Data.ByteString.Lazy.Char8 as BS
 
 import System.Console.GetOpt
 import System.Environment (getArgs, getProgName)
@@ -14,8 +17,7 @@ import Field.Hint
 
 data Descr =
   Descr
-  { _descrFD :: FieldDescription Float
-  , _descrFS :: FieldStrings
+  { _optHintDescr :: HintDescr Float
   } deriving Show
 
 data Options =
@@ -26,10 +28,37 @@ data Options =
   , _optT :: String
   , _optF :: String
   , _optG :: String
+  , _optReadJSON :: Maybe FilePath
   } deriving Show
 
 makeLenses ''Descr
 makeLenses ''Options
+
+optionsToDescr :: Options -> Descr
+optionsToDescr o =
+  let
+    hintDescr =
+      let
+        fieldStrings
+          | _optPolar o =
+            Polar
+            { _rString = _optR o
+            , _tString = _optT o
+            }
+          | otherwise =
+            Cartesian
+            { _fString = _optF o
+            , _gString = _optG o
+            }
+      in
+        HintDescr
+        { _hintDescrFD = _optFD o
+        , _hintDescrFS = fieldStrings
+        }
+  in
+    Descr
+    { _optHintDescr = hintDescr
+    }
 
 loadConfigFromArgs :: IO Descr
 loadConfigFromArgs =
@@ -37,23 +66,18 @@ loadConfigFromArgs =
     args <- getArgs
     let (actions,_,_) = getOpt RequireOrder options args
     opts <- foldl (>>=) (return startOptions) actions
-    let
-      fieldStrings
-        | _optPolar opts =
-             Polar
-             { _rString = _optR opts
-             , _tString = _optT opts
-             }
-        | otherwise =
-            Cartesian
-            { _fString = _optF opts
-            , _gString = _optG opts
-            }
-    return $
-      Descr
-      { _descrFD = _optFD opts
-      , _descrFS = fieldStrings
-      }
+    descr <-
+      do
+        let descr = optionsToDescr opts
+        case _optReadJSON opts of
+          Just path ->
+            do
+              mjson <- decode' <$> BS.readFile path
+              case mjson of
+                Nothing -> die "Failed to read JSON file"
+                Just json -> pure $ (optHintDescr .~ json) descr
+          Nothing -> pure descr
+    pure descr
 
 startOptions :: Options
 startOptions =
@@ -64,6 +88,7 @@ startOptions =
   , _optPolar = False
   , _optR = "r*(1-r*r)"
   , _optT = "1"
+  , _optReadJSON = Nothing
   }
 
 options :: [OptDescr (Options -> IO Options)]
@@ -117,6 +142,11 @@ options =
       "Double")
     $ unlines $ ["Height of field view"
                 ,"Default: " ++ show (startOptions ^. optFD.fdHeight)]
+  , Option "" ["read-json"]
+    (ReqArg
+      (\arg opt -> pure $ optReadJSON .~ Just arg $ opt)
+      "FILE")
+    "Read JSON description of field equations"
   , Option "h" ["help"]
     (NoArg
       (\_ -> do

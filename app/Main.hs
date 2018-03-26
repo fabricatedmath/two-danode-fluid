@@ -12,6 +12,8 @@ import Data.Array.Accelerate.Linear
 
 import Data.Array.Accelerate.Data.Colour.RGB            as RGB
 
+import Data.Function (on)
+
 import Pipes hiding (lift)
 import qualified Pipes.Prelude as Pipes (take)
 import Pipes.Safe
@@ -32,8 +34,10 @@ import Fluid
 
 import Type
 
-defaultFD :: P.Num a => DIM2 -> FieldDescription a
-defaultFD (Z :. ydim :. xdim) = FromCenter (V2 ydim xdim) (V2 0 0) (20) (1)
+defaultFD :: P.Fractional a => DIM2 -> FieldDescription a
+defaultFD (Z :. ydim :. xdim) =
+  FromCenter aspect (V2 0 0) (20) (10) xdim
+  where aspect = ((/) `on` P.fromIntegral) xdim ydim
 
 defaultFS :: FieldStrings --043 (/ 100)
 defaultFS =
@@ -55,9 +59,9 @@ main =
   do
     descr <- loadConfigFromArgs
     let
-      V2 ydim xdim = descr ^. descrFD.fdRes
-      fd = descr ^. descrFD
-      fs = descr ^. descrFS
+      V2 ydim xdim = descr ^. optHintDescr.hintDescrFD.fdRes
+      fd = descr ^. optHintDescr.hintDescrFD
+      fs = descr ^. optHintDescr.hintDescrFS
       dim = Z :. ydim :. xdim :: DIM2
     result <- buildPhaseSpace fd fs
     case result of
@@ -74,7 +78,7 @@ main =
             (A.map
               (\vec ->
                  let (V2 y x) = unlift vec :: V2 (Exp Float)
-                 in lift (y/100,x/100)
+                 in lift (y/1000,x/1000)
               ) . A.sum
             ) v
         in
@@ -83,17 +87,17 @@ main =
             runSafeT $ runEffect $
               fluidProducer idf ivf >->
               printer >->
-              forever (await >>= yield . arrayToImage) >->
-              Pipes.take 5000 >->
-              pngWriter 5 "/home/cdurham/Desktop/video/v"
+              --forever (await >>= yield . arrayToImage) >->
+              --Pipes.take 5000 >->
+              --pngWriter 5 "/home/cdurham/Desktop/video/v"
               --squaredDistanceShutoff >->
-              --openGLConsumer dim
+              openGLConsumer dim
 
 fluidProducer
   :: Monad m
   => Array DIM2 (Float, RGB Float)
   -> Array DIM2 (Float,Float)
-  -> Producer' (Array DIM2 Word32) m ()
+  -> Producer' (Array DIM2 (V3 Word8)) m ()
 fluidProducer idf ivf = f (idf,ivf)
   where
     step =
@@ -101,7 +105,7 @@ fluidProducer idf ivf = f (idf,ivf)
       (\arr ->
           let e = fluid 100 0.01 0 0 arr
               (df',vf') = unlift e :: (Acc (Field RGBDensity), Acc VelocityField)
-              cf' = A.map packRGBTupA $ makePicture df'
+              cf' = makePicture df'
               vf'' = A.zipWith (.+.) (use ivf) $ decayVelocity 0.9 vf'
           in
             lift (df', vf'', cf')

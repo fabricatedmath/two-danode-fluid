@@ -49,6 +49,8 @@ executables:
     - pipes
     - pipes-safe
     - pipes-graphics
+    - bytestring
+    - aeson
 
 tests:
   two-danode-fluid-test:

@@ -8,7 +8,7 @@ import Prelude as P
 import Field
 
 buildFieldAcc
-  :: (Elt b, P.Fractional a)
+  :: (Elt b, P.Fractional a,  P.RealFrac a)
   => FieldDescription a
   -> (V2 a -> V2 b)
   -> Array DIM3 (V2 b)
