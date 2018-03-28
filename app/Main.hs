@@ -4,7 +4,7 @@
 module Main where
 
 import Control.Lens hiding (use)
-import Control.Monad (forM_)
+import Control.Monad (forM_, forever)
 
 import Data.Array.Accelerate as A hiding ((>->))
 import Data.Array.Accelerate.LLVM.PTX
@@ -13,9 +13,9 @@ import Data.Array.Accelerate.Linear
 import Data.Array.Accelerate.Data.Colour.RGB            as RGB
 
 import Pipes hiding (lift)
---import qualified Pipes.Prelude as Pipes (take)
+import qualified Pipes.Prelude as Pipes (take)
 import Pipes.Safe
---import Pipes.Graphics
+import Pipes.Graphics (pngWriter)
 import Pipes.Graphics.Accelerate
 
 import Prelude as P
@@ -85,11 +85,11 @@ main =
             runSafeT $ runEffect $
               fluidProducer idf ivf >->
               printer >->
-              --forever (await >>= yield . arrayToImage) >->
-              --Pipes.take 5000 >->
-              --pngWriter 5 "/home/cdurham/Desktop/video/v"
+              forever (await >>= yield . arrayToImage) >->
+              Pipes.take 10000 >->
+              pngWriter 5 "/home/cdurham/Desktop/video-049/v"
               --squaredDistanceShutoff >->
-              openGLConsumer dim
+              --openGLConsumer dim
 
 fluidProducer
   :: Monad m
@@ -101,10 +101,11 @@ fluidProducer idf ivf = f (idf,ivf)
     step =
       run1
       (\arr ->
-          let e = fluid 100 0.01 0 0 arr
-              (df',vf') = unlift e :: (Acc (Field RGBDensity), Acc VelocityField)
-              cf' = makePicture df'
-              vf'' = A.zipWith (.+.) (use ivf) $ decayVelocity 0.9 vf'
+          let
+            e = fluid 100 0.01 0 0 arr
+            (df',vf') = unlift e :: (Acc (Field RGBDensity), Acc VelocityField)
+            cf' = makePicture df'
+            vf'' = A.zipWith (.+.) (use ivf) $ decayVelocity 0.9 vf'
           in
             lift (df', vf'', cf')
       )
