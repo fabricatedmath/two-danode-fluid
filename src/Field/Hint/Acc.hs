@@ -24,16 +24,18 @@ vectorToArray
 vectorToArray dim = fromVectors dim
 
 buildPhaseSpace
-  :: FieldDescription Float
-  -> FieldStrings
+  :: HintDescr Float
   -> IO (Either InterpreterError (Array DIM3 (V2 Float)))
-buildPhaseSpace fd fieldS =
+buildPhaseSpace hintDescr =
   do
-    let funcS = createFunction fieldS
-        dim =
-          let V2 y x = _fdRes fd
-              aa' = _fdAA fd
-          in Z :. y :. x :. aa'*aa' :: DIM3
+    let
+      fd = _hintDescrFD hintDescr
+      fieldS = _hintDescrFS hintDescr
+      funcS = createFunction fieldS
+      dim =
+        let V2 y x = _fdRes fd
+            aa' = _fdAA fd
+        in Z :. y :. x :. aa'*aa' :: DIM3
     result <-
       runInterpreter $
       do

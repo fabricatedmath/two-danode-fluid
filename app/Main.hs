@@ -4,7 +4,7 @@
 module Main where
 
 import Control.Lens hiding (use)
-import Control.Monad (forever, forM_)
+import Control.Monad (forM_)
 
 import Data.Array.Accelerate as A hiding ((>->))
 import Data.Array.Accelerate.LLVM.PTX
@@ -12,12 +12,10 @@ import Data.Array.Accelerate.Linear
 
 import Data.Array.Accelerate.Data.Colour.RGB            as RGB
 
-import Data.Function (on)
-
 import Pipes hiding (lift)
-import qualified Pipes.Prelude as Pipes (take)
+--import qualified Pipes.Prelude as Pipes (take)
 import Pipes.Safe
-import Pipes.Graphics
+--import Pipes.Graphics
 import Pipes.Graphics.Accelerate
 
 import Prelude as P
@@ -34,6 +32,7 @@ import Fluid
 
 import Type
 
+{-
 defaultFD :: P.Fractional a => DIM2 -> FieldDescription a
 defaultFD (Z :. ydim :. xdim) =
   FromCenter aspect (V2 0 0) (20) (10) xdim
@@ -44,10 +43,11 @@ defaultFS =
   Cartesian
   "(abs $ cos (0.75*x))**(abs $ cos (3*y)) + sin (3*x)"
   "sin x - cos y"
+-}
 
 printer :: MonadIO m => Pipe a a m ()
 printer =
-  forM_ [1..]
+  forM_ [(1::Int)..]
   (\i ->
       do
         await >>= yield
@@ -60,10 +60,8 @@ main =
     descr <- loadConfigFromArgs
     let
       V2 ydim xdim = descr ^. optHintDescr.hintDescrFD.fdRes
-      fd = descr ^. optHintDescr.hintDescrFD
-      fs = descr ^. optHintDescr.hintDescrFS
       dim = Z :. ydim :. xdim :: DIM2
-    result <- buildPhaseSpace fd fs
+    result <- buildPhaseSpace (descr ^. optHintDescr)
     case result of
       Left err -> print err
       Right v ->
@@ -78,7 +76,7 @@ main =
             (A.map
               (\vec ->
                  let (V2 y x) = unlift vec :: V2 (Exp Float)
-                 in lift (y/1000,x/1000)
+                 in lift (y/500,x/500)
               ) . A.sum
             ) v
         in
