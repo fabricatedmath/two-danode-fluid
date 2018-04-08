@@ -48,7 +48,8 @@ executables:
     - two-danode-fluid
     - pipes
     - pipes-safe
-    - pipes-graphics
+    - pipes-graphics-accelerate
+    - pipes-graphics-repa
     - bytestring
     - aeson
 

@@ -37,15 +37,25 @@ resolver: lts-10.10
 # will not be run. This is useful for tweaking upstream packages.
 packages:
 - .
-- ../two-danode
-- ../pipes-graphics
-- ../linear-instances
+#- ../two-danode
+# ../pipes-graphics
+# ../linear-instances
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
 - ffmpeg-light-0.12.0.1
-#- git:    https://github.com/fabricatedmath/pipes-graphics
-#  commit: bd230d54bf6de7e024ddb3249c17977bb20bd6cf
+
+- git: https://github.com/fabricatedmath/two-danode.git
+  commit: 2e2b5b459b16f77859cd57421a26a18133f57cf5
+
+- git: https://github.com/fabricatedmath/linear-instances.git
+  commit: f87581dbbc00325ee1914558000b0d529b48a311
+
+- git:    https://github.com/fabricatedmath/pipes-graphics
+  commit: 0d2e8120a2b483083289a122eb526f41587218b2
+  subdirs:
+    - pipes-graphics-accelerate
+    - pipes-graphics-repa
 
 - git:    https://github.com/tmcdonell/accelerate.git
   commit: c2946299193ac55547d51ff32abc3bfd9ad42d59
