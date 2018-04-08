@@ -20,6 +20,8 @@ import Pipes.Graphics.Accelerate
 
 import Prelude as P
 
+import System.IO
+
 import Acc.Lib
 
 import Config
@@ -57,6 +59,7 @@ printer =
 main :: IO ()
 main =
   do
+    hSetBuffering stdout LineBuffering
     descr <- loadConfigFromArgs
     let
       V2 ydim xdim = descr ^. optHintDescr.hintDescrFD.fdRes
@@ -87,7 +90,7 @@ main =
               printer >->
               forever (await >>= yield . arrayToImage) >->
               Pipes.take 10000 >->
-              pngWriter 5 "/home/cdurham/Desktop/video-049/v"
+              pngWriter 5 "/home/cdurham/Desktop/video-043-2/v"
               --squaredDistanceShutoff >->
               --openGLConsumer dim
 
