@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 module Acc.Lib where
@@ -7,7 +8,11 @@ import Data.Array.Accelerate as A
 import Data.Array.Accelerate.Data.Colour.RGB            as RGB
 import Data.Array.Accelerate.Data.Colour.HSV            as HSV
 
+#ifdef NATIVE
+import Data.Array.Accelerate.LLVM.Native
+#else
 import Data.Array.Accelerate.LLVM.PTX
+#endif
 
 import Data.Array.Accelerate.Linear
 

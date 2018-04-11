@@ -9,7 +9,7 @@ import Control.Monad (forM_, forever)
 
 import Data.Array.Accelerate as A hiding ((>->))
 #ifdef NATIVE
-import DataArray.Accelerate.LLVM.Native
+import Data.Array.Accelerate.LLVM.Native
 #else
 import Data.Array.Accelerate.LLVM.PTX
 #endif
