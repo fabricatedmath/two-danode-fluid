@@ -46,6 +46,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - two-danode-fluid
+    - directory
     - pipes
     - pipes-safe
     - pipes-graphics-accelerate

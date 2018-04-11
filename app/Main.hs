@@ -20,6 +20,7 @@ import Pipes.Graphics.Accelerate
 
 import Prelude as P
 
+import System.Directory
 import System.IO
 
 import Acc.Lib
@@ -62,37 +63,45 @@ main =
     hSetBuffering stdout LineBuffering
     descr <- loadConfigFromArgs
     let
+      mfp = descr ^. optOut
       V2 ydim xdim = descr ^. optHintDescr.hintDescrFD.fdRes
       dim = Z :. ydim :. xdim :: DIM2
+      maxVecNorm = descr ^. optMaxVecNorm
+      filePrefix = descr ^. optFilePrefix
     result <- buildPhaseSpace (descr ^. optHintDescr)
     case result of
       Left err -> print err
       Right v ->
         let
           !idf = makeDensity_hsv dim
-          m' =
+          maximumVecNorm' =
             run1
-            (A.maximum . A.flatten . A.map quadrance) v :: Array DIM0 Float
-          m = indexArray m' Z
+            (A.maximum . A.flatten . A.map norm) v :: Array DIM0 Float
+          maximumVecNorm = indexArray maximumVecNorm' Z
           !ivf =
             run1
             (A.map
               (\vec ->
-                 let (V2 y x) = unlift vec :: V2 (Exp Float)
-                 in lift (y/500,x/500)
+                 let (V2 y x) = unlift $ vec ^/ constant maximumVecNorm ^* constant maxVecNorm :: V2 (Exp Float)
+                 in lift (y,x)
               ) . A.sum
             ) v
+
+          outPipe =
+              case mfp of
+                Nothing -> openGLConsumer dim
+                Just fp ->
+                  do
+                    liftIO $ createDirectoryIfMissing True fp
+                    forever (await >>= yield . arrayToImage) >->
+                      pngWriter 5 (fp P.++ "/" P.++ filePrefix)
         in
           do
-            print m
             runSafeT $ runEffect $
               fluidProducer idf ivf >->
               printer >->
-              forever (await >>= yield . arrayToImage) >->
               Pipes.take 10000 >->
-              pngWriter 5 "/home/cdurham/Desktop/video-043-2/v"
-              --squaredDistanceShutoff >->
-              --openGLConsumer dim
+              outPipe
 
 fluidProducer
   :: Monad m
