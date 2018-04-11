@@ -19,6 +19,12 @@ extra-source-files:
 # common to point users to the README.md file.
 description:         Please see the README on Github at <https://github.com/fabricatedmath/two-danode-fluid#readme>
 
+flags:
+  native:
+    description: use accelerate-llvm-native instead of accelerate-llvm-ptx
+    manual: True
+    default: False
+
 dependencies:
 - base >= 4.7 && < 5
 - hint
@@ -28,10 +34,19 @@ dependencies:
 - linear
 - accelerate
 - accelerate-io
-- accelerate-llvm-ptx
 - colour-accelerate
 - linear-accelerate
 - two-danode
+
+when:
+  - condition: flag(native)
+    then:
+      cpp-options: -DNATIVE
+      dependencies:
+        - accelerate-llvm-native
+    else:
+      dependencies:
+        - accelerate-llvm-ptx
 
 library:
   source-dirs: src
