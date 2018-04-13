@@ -27,9 +27,9 @@ import Acc.Lib
 
 import Config
 
-import Field
-import Field.Hint
-import Field.Hint.Acc
+import Field (fdRes)
+import Field.Hint (hintDescrFD)
+import Field.Hint.Acc (buildPhaseSpace)
 
 import Fluid
 
@@ -78,11 +78,13 @@ main =
             run1
             (A.maximum . A.flatten . A.map norm) v :: Array DIM0 Float
           maximumVecNorm = indexArray maximumVecNorm' Z
+          multiplier = constant $ maxVecNorm / maximumVecNorm
           !ivf =
             run1
             (A.map
               (\vec ->
-                 let (V2 y x) = unlift $ vec ^/ constant maximumVecNorm ^* constant maxVecNorm :: V2 (Exp Float)
+                 let (V2 y x) =
+                       unlift $ vec ^* multiplier :: V2 (Exp Float)
                  in lift (y,x)
               ) . A.sum
             ) v
