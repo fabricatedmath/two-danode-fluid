@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 
 module Main where
@@ -7,7 +8,11 @@ import Control.Lens hiding (use)
 import Control.Monad (forM_, forever)
 
 import Data.Array.Accelerate as A hiding ((>->))
+#ifdef NATIVE
+import Data.Array.Accelerate.LLVM.Native
+#else
 import Data.Array.Accelerate.LLVM.PTX
+#endif
 import Data.Array.Accelerate.Linear
 
 import Data.Array.Accelerate.Data.Colour.RGB            as RGB
