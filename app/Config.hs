@@ -2,7 +2,7 @@
 
 module Config
   ( loadConfigFromArgs, Descr(..)
-  , optHintDescr, optOut, optMaxVecNorm, optFilePrefix
+  , optHintDescr, optOut, optMaxVecNorm, optFilePrefix, optNumFrames
   )
 where
 
@@ -22,6 +22,7 @@ data Descr =
   , _optOut :: Maybe FilePath
   , _optFilePrefix :: String
   , _optMaxVecNorm :: Float
+  , _optNumFrames :: Maybe Int
   } deriving Show
 
 makeLenses ''Descr
@@ -33,6 +34,7 @@ defaultDescr hintDescr =
   , _optOut = Nothing
   , _optMaxVecNorm = 0.02
   , _optFilePrefix = "v"
+  , _optNumFrames = Nothing
   }
 
 loadConfigFromArgs :: IO Descr
@@ -61,6 +63,11 @@ options =
      (\arg -> (\opt -> pure $ optMaxVecNorm .~ read arg $ opt))
      "Float")
     "Max velocity norm"
+  , Option "" ["num-frames"]
+    (ReqArg
+     (\arg -> (\opt -> pure $ optNumFrames .~ Just (read arg) $ opt))
+     "Int")
+    "Number of frames to write/show"
   , Option "h" ["help"]
     (NoArg
       ((\_ -> do

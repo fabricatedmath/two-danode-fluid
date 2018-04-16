@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-10.10
+resolver: lts-11.5
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -37,13 +37,10 @@ resolver: lts-10.10
 # will not be run. This is useful for tweaking upstream packages.
 packages:
 - .
-#- ../two-danode
-# ../pipes-graphics
 # ../linear-instances
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
-- ffmpeg-light-0.12.0.1
 - accelerate-1.2.0.0
 - accelerate-io-1.2.0.0
 - accelerate-llvm-1.2.0.0
@@ -51,19 +48,27 @@ extra-deps:
 - accelerate-llvm-ptx-1.2.0.0
 - colour-accelerate-0.3.0.0
 - linear-accelerate-0.6.0.0
-- hashtables-1.2.3.0
+
+- git: https://github.com/acowley/ffmpeg-light
+  commit: 74ea1f729a9530ceb06a25aba31951924c47d5d3
 
 - git: https://github.com/fabricatedmath/two-danode.git
-  commit: 2e2b5b459b16f77859cd57421a26a18133f57cf5
+  commit: 3562fea576c2a1052a3403fa7ec2b746f4912c42
 
 - git: https://github.com/fabricatedmath/linear-instances.git
   commit: f87581dbbc00325ee1914558000b0d529b48a311
 
 - git: https://github.com/fabricatedmath/pipes-graphics
-  commit: 0d2e8120a2b483083289a122eb526f41587218b2
+  commit: e4573ea00ff4a059bb7ac23d3af40c546bc89d79
   subdirs:
     - pipes-graphics-accelerate
     - pipes-graphics-repa
+
+#- git: https://github.com/fabricatedmath/pipes-graphics
+#  commit: 0d2e8120a2b483083289a122eb526f41587218b2
+#  subdirs:
+#    - pipes-graphics-accelerate
+#    - pipes-graphics-repa
 
 # - git:    https://github.com/tmcdonell/accelerate.git
 #   commit: c2946299193ac55547d51ff32abc3bfd9ad42d59

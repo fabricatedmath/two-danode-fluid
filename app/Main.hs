@@ -40,19 +40,6 @@ import Fluid
 
 import Type
 
-{-
-defaultFD :: P.Fractional a => DIM2 -> FieldDescription a
-defaultFD (Z :. ydim :. xdim) =
-  FromCenter aspect (V2 0 0) (20) (10) xdim
-  where aspect = ((/) `on` P.fromIntegral) xdim ydim
-
-defaultFS :: FieldStrings --043 (/ 100)
-defaultFS =
-  Cartesian
-  "(abs $ cos (0.75*x))**(abs $ cos (3*y)) + sin (3*x)"
-  "sin x - cos y"
--}
-
 printer :: MonadIO m => Pipe a a m ()
 printer =
   forM_ [(1::Int)..]
@@ -72,6 +59,7 @@ main =
       V2 ydim xdim = descr ^. optHintDescr.hintDescrFD.fdRes
       dim = Z :. ydim :. xdim :: DIM2
       maxVecNorm = descr ^. optMaxVecNorm
+      numFrames = descr ^. optNumFrames
       filePrefix = descr ^. optFilePrefix
     result <- buildPhaseSpace (descr ^. optHintDescr)
     case result of
@@ -79,9 +67,8 @@ main =
       Right v ->
         let
           !idf = makeDensity_hsv dim
-          maximumVecNorm' =
-            run1
-            (A.maximum . A.flatten . A.map norm) v :: Array DIM0 Float
+          !maximumVecNorm' =
+            run1 (A.maximum . A.flatten . A.map norm) v :: Array DIM0 Float
           maximumVecNorm = indexArray maximumVecNorm' Z
           multiplier = constant $ maxVecNorm / maximumVecNorm
           !ivf =
@@ -96,25 +83,25 @@ main =
 
           outPipe =
               case mfp of
-                Nothing -> openGLConsumer dim
+                Nothing -> openGLConsumerFlat dim
                 Just fp ->
                   do
                     liftIO $ createDirectoryIfMissing True fp
-                    forever (await >>= yield . arrayToImage) >->
+                    forever (await >>= yield . flatToImage dim) >->
                       pngWriter 5 (fp P.++ "/" P.++ filePrefix)
         in
           do
             runSafeT $ runEffect $
               fluidProducer idf ivf >->
               printer >->
-              Pipes.take 10000 >->
+              maybe cat Pipes.take numFrames >->
               outPipe
 
 fluidProducer
   :: Monad m
   => Array DIM2 (Float, RGB Float)
   -> Array DIM2 (Float,Float)
-  -> Producer' (Array DIM2 (V3 Word8)) m ()
+  -> Producer' (Array DIM1 Word8) m ()
 fluidProducer idf ivf = f (idf,ivf)
   where
     step =
@@ -126,7 +113,7 @@ fluidProducer idf ivf = f (idf,ivf)
             cf' = makePicture df'
             vf'' = A.zipWith (.+.) (use ivf) $ decayVelocity 0.9 vf'
           in
-            lift (df', vf'', cf')
+            lift (df', vf'', arrayToFlat cf')
       )
 
     f (df,vf) =
